@@ -1,0 +1,13 @@
+using System;
+
+namespace CustomCode
+{
+    public class AwesomeClass
+    {
+        public void Run(string message)
+        {
+            var x = 2 + 3;
+            // Console.WriteLine($"From custom class: {message}!!!"); // Does not compile
+        }
+    }
+}
