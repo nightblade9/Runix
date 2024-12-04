@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Text;
 
 internal class Program
 {
@@ -9,18 +11,25 @@ internal class Program
     {
         const string FileName = "Content/code.txt";
         var code = File.ReadAllText(FileName);
+        CompileAndRun(code);
+    }
 
+    private static void CompileAndRun(string code)
+    {
         // From: https://stackoverflow.com/a/29417053/8641842
         var syntaxTree = CSharpSyntaxTree.ParseText(code);
 
         // define other necessary objects for compilation
         string outputAssemblyName = Path.GetRandomFileName();
 
+        // Load appropriate DLLs. Take a look at anywhere you have mscorlib.dll to see what else is there.
+        // You might be surprised what you need to load; all this is necessary for System.Console.WriteLine(...).
         MetadataReference[] references = new MetadataReference[]
         {
-            // Look at the assembly, not the actual class we're importing.
-            // Also, Assembly.Load(...).Location doesn't seem to work, for some reason.
+            // Can't swap this out for mscorlib or System. Should be equivalent.
             MetadataReference.CreateFromFile(typeof(System.Object).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load("System.Console").Location),
+            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
         };
 
         // analyse and generate IL code from syntax tree
@@ -37,15 +46,7 @@ internal class Program
 
             if (!result.Success)
             {
-                // handle exceptions
-                IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic => 
-                    diagnostic.IsWarningAsError || 
-                    diagnostic.Severity == DiagnosticSeverity.Error);
-
-                foreach (Diagnostic diagnostic in failures)
-                {
-                    Console.Error.WriteLine("Compiler error {0}: {1}", diagnostic.Id, diagnostic.GetMessage());
-                }
+                ShowCompilerErrors(result);
             }
             else
             {
@@ -64,6 +65,19 @@ internal class Program
                 
                 Console.WriteLine($"The method returned {methodReturnValue ?? "nothing"}");
             }
+        }
+    }
+
+    private static void ShowCompilerErrors(EmitResult result)
+    {
+        // handle exceptions
+        IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
+            diagnostic.IsWarningAsError ||
+            diagnostic.Severity == DiagnosticSeverity.Error);
+
+        foreach (Diagnostic diagnostic in failures)
+        {
+            Console.Error.WriteLine("Compiler error {0}: {1}", diagnostic.Id, diagnostic.GetMessage());
         }
     }
 }
