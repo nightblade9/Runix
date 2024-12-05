@@ -24,12 +24,14 @@ layout_mode = 2
 [node name="Code" type="TextEdit" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 550)
 layout_mode = 2
-text = "namespace Testing;
+text = "using System;
+
+namespace Testing;
 
 class CustomClass {
     public CustomClass() { }
-    public Run(string message) {
-      Console.WriteLine($\"Message is: {message}\");
+    public string Run(string message) {
+      return ($\"Message is: {message}\");
    }
 }"
 autowrap_mode = 2

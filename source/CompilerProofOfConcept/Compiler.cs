@@ -1,20 +1,16 @@
 ﻿using System.Reflection;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Text;
 
-internal class Program
+namespace Runix;
+
+public static class Compiler
 {
-    private static void Main(string[] args)
-    {
-        const string FileName = "Content/code.txt";
-        var code = File.ReadAllText(FileName);
-        CompileAndRun(code);
-    }
+    public static IEnumerable<Diagnostic> s_LastFailures { get; private set; }
+    private static MemoryStream s_ms;
 
-    private static void CompileAndRun(string code)
+    public static bool Compile(string code)
     {
         // From: https://stackoverflow.com/a/29417053/8641842
         var syntaxTree = CSharpSyntaxTree.ParseText(code);
@@ -39,45 +35,52 @@ internal class Program
             references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        using (var ms = new MemoryStream())
+        s_ms = new MemoryStream();
+        // write IL code into memory
+        EmitResult result = compilation.Emit(s_ms);
+
+        if (!result.Success)
         {
-            // write IL code into memory
-            EmitResult result = compilation.Emit(ms);
-
-            if (!result.Success)
-            {
-                ShowCompilerErrors(result);
-            }
-            else
-            {
-                // load this 'virtual' DLL so that we can use
-                ms.Seek(0, SeekOrigin.Begin);
-                Assembly assembly = Assembly.Load(ms.ToArray());
-
-                // create instance of the desired class and call the desired function
-                Type type = assembly.GetType("CustomCode.AwesomeClass");
-                object obj = Activator.CreateInstance(type);
-                var methodReturnValue = type.InvokeMember("Run",
-                    BindingFlags.Default | BindingFlags.InvokeMethod,
-                    null,
-                    obj,
-                    new object[] { "Hello World" });
-                
-                Console.WriteLine($"The method returned {methodReturnValue ?? "nothing"}");
-            }
+            PopulateCompilerErrors(result);
         }
+
+        return result.Success;
     }
 
-    private static void ShowCompilerErrors(EmitResult result)
+    public static object? Run()
+    {
+        // Call compile first, ofc
+        if (s_ms == null)
+        {
+            throw new InvalidOperationException("Call Compile first");
+        }
+
+        // load this 'virtual' DLL so that we can use
+        s_ms.Seek(0, SeekOrigin.Begin);
+        Assembly assembly = Assembly.Load(s_ms.ToArray());
+        s_ms.Close();
+        s_ms.Dispose();
+
+        // create instance of the desired class and call the desired function
+        Type type = assembly.GetType("Testing.CustomClass");
+        object obj = Activator.CreateInstance(type);
+        var methodReturnValue = type.InvokeMember("Run",
+            BindingFlags.Default | BindingFlags.InvokeMethod,
+            null,
+            obj,
+            new object[] { "Hello World" });
+        
+
+        return methodReturnValue;
+    }
+
+    private static void PopulateCompilerErrors(EmitResult result)
     {
         // handle exceptions
         IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
             diagnostic.IsWarningAsError ||
             diagnostic.Severity == DiagnosticSeverity.Error);
 
-        foreach (Diagnostic diagnostic in failures)
-        {
-            Console.Error.WriteLine("Compiler error {0}: {1}", diagnostic.Id, diagnostic.GetMessage());
-        }
+        s_LastFailures = failures;
     }
 }
