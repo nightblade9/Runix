@@ -7,3 +7,34 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(1280, 720)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Files" type="TabBar" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="Code" type="TextEdit" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 550)
+layout_mode = 2
+text = "namespace Testing;
+
+class CustomClass {
+    public CustomClass() { }
+    public Run(string message) {
+      Console.WriteLine($\"Message is: {message}\");
+   }
+}"
+autowrap_mode = 2
+indent_wrapped_lines = true
+
+[node name="CompilerResults" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="BuildStatus" type="Label" parent="VBoxContainer"]
+layout_mode = 2
