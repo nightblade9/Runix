@@ -8,7 +8,7 @@ using MonoGo.Engine.UI.Controls;
 using MonoGo.Engine.UI.Defs;
 using Runix.CSharpCompiler;
 
-namespace Runix.Editor
+namespace Runix.Editor.Screens
 {
     public class IdeScreen : Entity, IHaveGUI
     {
