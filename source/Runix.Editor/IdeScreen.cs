@@ -71,7 +71,26 @@ class CustomClass {
                 return;
             }
 
+            // Compile
             var code = _codeInput.Value;
+            _buildStatus.Text = "Building ...";
+            _compilerErrors.Text = "";
+
+            var isSuccess = Compiler.Compile(code);
+            _buildStatus.Text = $"Build {(isSuccess ? "suceeded" : "failed!")}";
+            if (!isSuccess)
+            {
+                foreach (var message in Compiler.s_LastFailures)
+                {
+                    _compilerErrors.Text += $"{message.Id} - {message.GetMessage()}";
+                }
+                return;
+            }
+
+            // Run code
+            _buildStatus.Text = "Running ...";
+            var response = Compiler.Run();
+            _buildStatus.Text = $"Code returned: {response}";
         }
     }
 }
