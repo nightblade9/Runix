@@ -1,4 +1,5 @@
-﻿using MonoGo.Engine;
+﻿using System.Threading;
+using MonoGo.Engine;
 using MonoGo.Engine.EC;
 using MonoGo.Engine.SceneSystem;
 using MonoGo.Engine.UI;
@@ -70,27 +71,33 @@ class CustomClass {
             {
                 return;
             }
+            
+            // Doing this in the same thread unreasonably freezes the UI.
+            // thread.Join() also freezes the UI ...
+            var thread = new Thread(() => {
+                // Compile
+                var code = _codeInput.Value;
+                _buildStatus.Text = "Building ...";
+                _compilerErrors.Text = "";
 
-            // Compile
-            var code = _codeInput.Value;
-            _buildStatus.Text = "Building ...";
-            _compilerErrors.Text = "";
-
-            var isSuccess = Compiler.Compile(code);
-            _buildStatus.Text = $"Build {(isSuccess ? "suceeded" : "failed!")}";
-            if (!isSuccess)
-            {
-                foreach (var message in Compiler.s_LastFailures)
+                var isSuccess = Compiler.Compile(code);
+                _buildStatus.Text = $"Build {(isSuccess ? "suceeded" : "failed!")}";
+                if (!isSuccess)
                 {
-                    _compilerErrors.Text += $"{message.Id} - {message.GetMessage()}";
+                    foreach (var message in Compiler.s_LastFailures)
+                    {
+                        _compilerErrors.Text += $"{message.Id} - {message.GetMessage()}";
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // Run code
-            _buildStatus.Text = "Running ...";
-            var response = Compiler.Run();
-            _buildStatus.Text = $"Code returned: {response}";
+                // Run code
+                _buildStatus.Text = "Running ...";
+                var response = Compiler.Run();
+                _buildStatus.Text = $"Code returned: {response}";
+            });
+
+            thread.Start();
         }
     }
 }
