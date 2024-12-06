@@ -6,9 +6,10 @@ using MonoGo.Engine.Drawing;
 using MonoGo.Engine.EC;
 using MonoGo.Engine.SceneSystem;
 using MonoGo.Engine.Utils;
+using Runix.Editor.Screens;
 using System.Diagnostics;
 
-namespace Runix.Editor
+namespace Runix.Editor.Controllers
 {
     public class GameController : Entity
 	{
@@ -55,7 +56,7 @@ namespace Runix.Editor
             GraphicsMgr.VertexBatch.RasterizerState = DefaultRasterizer;
 
 			var cameraController = new CameraController(MainCamera);
-            var ideScreen = new IdeScreen(cameraController);
+            var ideScreen = new VisualDesignScreen(cameraController);
 
 			// Enabling applying postprocessing effects to separate layers.
 			// Note that this will create an additional surface.

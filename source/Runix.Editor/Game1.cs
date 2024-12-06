@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGo.Engine;
+using Runix.Editor.Controllers;
 
 namespace Runix.Editor
 {

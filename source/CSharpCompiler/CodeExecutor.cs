@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace CSharpCompiler;
+namespace Runix.CSharpCompiler;
 
 public class CodeExecutor
 {

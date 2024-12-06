@@ -5,7 +5,7 @@ using MonoGo.Engine.EC;
 using MonoGo.Engine.SceneSystem;
 using MonoGo.Engine.Utils;
 
-namespace Runix.Editor
+namespace Runix.Editor.Controllers
 {
     /// <summary>
     /// Controls the camera.
