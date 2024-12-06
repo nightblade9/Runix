@@ -55,7 +55,7 @@ namespace Runix.Editor
             GraphicsMgr.VertexBatch.RasterizerState = DefaultRasterizer;
 
 			var cameraController = new CameraController(MainCamera);
-            var splashScreen = new SplashScreen(cameraController);
+            var ideScreen = new IdeScreen(cameraController);
 
 			// Enabling applying postprocessing effects to separate layers.
 			// Note that this will create an additional surface.
