@@ -1,17 +1,19 @@
 ﻿using System.Threading;
+using CSharpCompiler;
 using MonoGo.Engine;
 using MonoGo.Engine.EC;
 using MonoGo.Engine.SceneSystem;
 using MonoGo.Engine.UI;
 using MonoGo.Engine.UI.Controls;
 using MonoGo.Engine.UI.Defs;
+using Runix.CSharpCompiler;
 
 namespace Runix.Editor
 {
     public class IdeScreen : Entity, IHaveGUI
     {
         private TextInput _codeInput;
-        private Paragraph _compilerErrors;
+        private Paragraph compilerErrors;
         private Paragraph _buildStatus;
 
         private CameraController _cameraController;
@@ -54,8 +56,8 @@ class CustomClass {
 
             // Add the compiler results label: compiler errors
             panel.AddChild(new HorizontalLine());
-            _compilerErrors = panel.AddChild(new Paragraph("Compiler errors go here\n(Multiple if applicable)"));
-            _compilerErrors.Size.Y.SetPixels(200);
+            compilerErrors = panel.AddChild(new Paragraph("Compiler errors go here\n(Multiple if applicable)"));
+            compilerErrors.Size.Y.SetPixels(200);
 
             // Add the build-messages thing
             panel.AddChild(new HorizontalLine());
@@ -78,22 +80,23 @@ class CustomClass {
                 // Compile
                 var code = _codeInput.Value;
                 _buildStatus.Text = "Building ...";
-                _compilerErrors.Text = "";
+                compilerErrors.Text = "";
 
-                var isSuccess = Compiler.Compile(code);
+                var compiler = new Compiler();
+                var isSuccess = compiler.Compile(code);
                 _buildStatus.Text = $"Build {(isSuccess ? "suceeded" : "failed!")}";
                 if (!isSuccess)
                 {
-                    foreach (var message in Compiler.s_LastFailures)
+                    foreach (var message in compiler.LastFailures)
                     {
-                        _compilerErrors.Text += $"{message.Id} - {message.GetMessage()}";
+                        compilerErrors.Text += $"{message.Id} - {message.GetMessage()}";
                     }
                     return;
                 }
 
                 // Run code
                 _buildStatus.Text = "Running ...";
-                var response = Compiler.Run();
+                var response = new CodeExecutor().Run(compiler.OutputAssembly, "Testing.CustomClass", "Run", "Hello, world!");
                 _buildStatus.Text = $"Code returned: {response}";
             });
 

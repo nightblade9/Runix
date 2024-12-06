@@ -3,14 +3,16 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 
-namespace Runix;
+namespace Runix.CSharpCompiler;
 
-public static class Compiler
+public class Compiler
 {
-    public static IEnumerable<Diagnostic> s_LastFailures { get; private set; }
-    private static MemoryStream s_ms;
+    public IEnumerable<Diagnostic> LastFailures { get; private set; }
+    public Assembly OutputAssembly { get; private set; }
+    
+    private MemoryStream _memoryStream;
 
-    public static bool Compile(string code)
+    public bool Compile(string code)
     {
         // From: https://stackoverflow.com/a/29417053/8641842
         var syntaxTree = CSharpSyntaxTree.ParseText(code);
@@ -35,52 +37,45 @@ public static class Compiler
             references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        s_ms = new MemoryStream();
+        _memoryStream = new MemoryStream();
         // write IL code into memory
-        EmitResult result = compilation.Emit(s_ms);
+        EmitResult result = compilation.Emit(_memoryStream);
 
         if (!result.Success)
         {
             PopulateCompilerErrors(result);
+            _memoryStream.Close();
+            _memoryStream.Dispose();
+            return false;
         }
 
-        return result.Success;
+        OutputCompiledAssembly();
+
+        return true;
     }
 
-    public static object? Run()
+    private void OutputCompiledAssembly()
     {
         // Call compile first, ofc
-        if (s_ms == null)
+        if (_memoryStream == null)
         {
-            throw new InvalidOperationException("Call Compile first");
+            throw new InvalidOperationException("Call Compile first!");
         }
 
         // load this 'virtual' DLL so that we can use
-        s_ms.Seek(0, SeekOrigin.Begin);
-        Assembly assembly = Assembly.Load(s_ms.ToArray());
-        s_ms.Close();
-        s_ms.Dispose();
-
-        // create instance of the desired class and call the desired function
-        Type type = assembly.GetType("Testing.CustomClass");
-        object obj = Activator.CreateInstance(type);
-        var methodReturnValue = type.InvokeMember("Run",
-            BindingFlags.Default | BindingFlags.InvokeMethod,
-            null,
-            obj,
-            new object[] { "Hello World" });
-        
-
-        return methodReturnValue;
+        _memoryStream.Seek(0, SeekOrigin.Begin);
+        OutputAssembly = Assembly.Load(_memoryStream.ToArray());
+        _memoryStream.Close();
+        _memoryStream.Dispose();
     }
-
-    private static void PopulateCompilerErrors(EmitResult result)
+    
+    private void PopulateCompilerErrors(EmitResult result)
     {
         // handle exceptions
         IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
             diagnostic.IsWarningAsError ||
             diagnostic.Severity == DiagnosticSeverity.Error);
 
-        s_LastFailures = failures;
+        LastFailures = failures;
     }
 }
