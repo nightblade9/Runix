@@ -30,6 +30,9 @@
     <PackageReference Include="MonoGo.Pipeline" Version="*" />
     <PackageReference Include="Nopipeline.Task" Version="2.2.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CompilerProofOfConcept\CompilerProofOfConcept.csproj" />
+  </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />
     <Exec Command="dotnet tool restore" />

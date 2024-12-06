@@ -23,11 +23,30 @@ namespace Runix.Editor
         public void CreateUI()
         {
             UISystem.LoadTheme("DefaultTheme");
+            // Non-default stylesheet, so that it's visible.
+            // One panel per scene, I think. Not 100% sure.
+            var panel = new Panel(UISystem.DefaultStylesheets.Panels)
+            {
+                Anchor = Anchor.Center,
+                OverflowMode = OverflowMode.HideOverflow,
+            };
+            panel.Size.X.SetPercents(100);
+            panel.Size.Y.SetPercents(100);
+            UISystem.Add(panel);
 
             // Add the code input area
-            var panel = CreateAndAddPanel();
             _codeInput = panel.AddChild(new TextInput());
+            _codeInput.Multiline = true;
             _codeInput.PlaceholderText = "Source\ncode\ngoes\nhere";
+            _codeInput.Value = @"using System;
+namespace Testing;
+
+class CustomClass {
+    public CustomClass() { }
+    public string Run(string message) {
+      return ($""Message is: {message}"");
+   }
+}";
             _codeInput.Size.Y.SetPixels(450);
             _codeInput.Multiline = true;
             _codeInput.CreateVerticalScrollbar();
@@ -43,19 +62,16 @@ namespace Runix.Editor
             _buildStatus.Size.Y.SetPixels(720 - 450 - 200);
         }
 
-        private Panel CreateAndAddPanel()
+        public override void Update()
         {
-            // Non-default stylesheet, so that it's visible.
-            // One panel per scene, I think. Not 100% sure.
-            var panel = new Panel(UISystem.DefaultStylesheets.Panels)
+            base.Update();
+
+            if (Input.KeyboardKey != Microsoft.Xna.Framework.Input.Keys.F5)
             {
-                Anchor = Anchor.Center,
-                OverflowMode = OverflowMode.HideOverflow,
-            };
-            panel.Size.X.SetPercents(100);
-            panel.Size.Y.SetPercents(100);
-            UISystem.Add(panel);
-            return panel;
+                return;
+            }
+
+            var code = _codeInput.Value;
         }
     }
 }
