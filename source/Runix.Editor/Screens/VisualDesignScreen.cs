@@ -1,4 +1,5 @@
-﻿using MonoGo.Engine;
+﻿using Microsoft.Xna.Framework;
+using MonoGo.Engine;
 using MonoGo.Engine.EC;
 using MonoGo.Engine.SceneSystem;
 using MonoGo.Engine.UI;
@@ -20,10 +21,15 @@ namespace Runix.Editor.Screens
         public void CreateUI()
         {
             UISystem.LoadTheme("DefaultTheme");
-            // Non-default stylesheet, so that it's visible.
-            // One panel per scene, I think. Not 100% sure.
-            var panel = CreateAndAddPanel(Anchor.CenterLeft, 25);
-            panel = CreateAndAddPanel(Anchor.CenterRight, 75);
+            
+            var sceneTreePanel = CreateAndAddPanel(Anchor.CenterLeft, 25);
+            // Setting DraggableMode doesn't seem to make them draggable
+            sceneTreePanel.AddChild(new Paragraph("Root"));
+            sceneTreePanel.AddChild(new Paragraph("  Child1"));
+            sceneTreePanel.AddChild(new Paragraph("    Subchild2"));
+            sceneTreePanel.AddChild(new Paragraph("  Child2"));
+            
+            var currentScenePanel = CreateAndAddPanel(Anchor.CenterRight, 75);
         }
 
         private static Panel CreateAndAddPanel(Anchor anchor, int widthPercent)

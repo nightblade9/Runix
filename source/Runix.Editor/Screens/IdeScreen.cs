@@ -27,7 +27,6 @@ namespace Runix.Editor.Screens
         {
             UISystem.LoadTheme("DefaultTheme");
             // Non-default stylesheet, so that it's visible.
-            // One panel per scene, I think. Not 100% sure.
             var panel = new Panel(UISystem.DefaultStylesheets.Panels)
             {
                 Anchor = Anchor.Center,
