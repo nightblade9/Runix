@@ -56,7 +56,8 @@ namespace Runix.Editor.Controllers
             GraphicsMgr.VertexBatch.RasterizerState = DefaultRasterizer;
 
 			var cameraController = new CameraController(MainCamera);
-            var ideScreen = new VisualDesignScreen(cameraController);
+			// Default/Starting screen
+            var startingScreen = new VisualDesignScreen(cameraController);
 
 			// Enabling applying postprocessing effects to separate layers.
 			// Note that this will create an additional surface.
